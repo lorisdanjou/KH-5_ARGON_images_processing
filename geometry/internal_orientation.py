@@ -148,4 +148,3 @@ def least_squares_linear(FMs_fiducial_true_coords, FMs_image_true_coords, alpha=
     # print("cond = ", np.linalg.norm(np.linalg.inv(A.T @ A)) * np.linalg.norm(A.T @ A))
     
     return matrix
-    
