@@ -118,7 +118,7 @@ def objective_function_linear(matrix, FMs_fiducial_true_coords, FMs_image_true_c
     return res
 
 
-def least_squares_linear(FMs_fiducial_true_coords, FMs_image_true_coords):
+def least_squares_linear(FMs_fiducial_true_coords, FMs_image_true_coords, alpha=0, a_priori=np.eye(2)):
     '''
     Compute the least squares solution to find the linear transformation matrix that maps image coordinates to fiducial coordinates.
     Inputs:
@@ -136,8 +136,16 @@ def least_squares_linear(FMs_fiducial_true_coords, FMs_image_true_coords):
         A.append([FMs_image_true_coords[i, 0], FMs_image_true_coords[i, 1], 0, 0])
         A.append([0, 0, FMs_image_true_coords[i, 0], FMs_image_true_coords[i, 1]])
     A = np.array(A)
-    x = np.linalg.inv(A.T @ A) @ A.T @ b
+    
+    if alpha <= 1e-8:
+        x = np.linalg.inv(A.T @ A) @ A.T @ b
+    else:
+        x0 = a_priori.reshape(-1, 1)
+        x = np.linalg.inv(A.T @ A + alpha * np.eye(4)) @ (A.T @ b + alpha * x0)
+        
     matrix = x.reshape(-1, 2)
+    
+    # print("cond = ", np.linalg.norm(np.linalg.inv(A.T @ A)) * np.linalg.norm(A.T @ A))
     
     return matrix
     
