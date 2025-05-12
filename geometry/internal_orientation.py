@@ -11,9 +11,9 @@ def photo_to_fiducial_coordinates(xp, yp, x0, y0):
     Outputs:
         xi, eta: Fiducial coordinates.
     '''
-    return xp - x0, yp - y0
+    return xp + x0, yp + y0
 
-def fiducial_to_photos_coordinates(xi, eta, x0, y0):
+def fiducial_to_photo_coordinates(xi, eta, x0, y0):
     '''
     Convert fiducial coordinates to photo coordinates using the given parameters.
     Inputs:
@@ -22,7 +22,7 @@ def fiducial_to_photos_coordinates(xi, eta, x0, y0):
     Outputs:
         x, y: Photo coordinates.
     '''
-    return xi + x0, eta + y0
+    return xi - x0, eta - y0
 
 # Conversion between image and fiducial coordinates
 
@@ -228,5 +228,3 @@ def objective_function_affine(params, FMs_fiducial_true_coords, FMs_image_true_c
     res = 1/2 * np.linalg.norm(FMs_fiducial_inferred_coords - FMs_fiducial_true_coords, axis=1) ** 2
     res = np.sum(res)
     return res
-
-

@@ -96,3 +96,49 @@ def local_cartesian_to_geocentric_cartesian_coordinates(x_gr, y_gr, z_gr, lat_c,
     X = np.zeros((3, 1))
     X = np.linalg.inv(matrix) @ np.array([[x_gr], [y_gr], [z_gr]]) + np.array([[x_c], [y_c], [z_c]])
     return X[0, 0], X[1, 0], X[2, 0]
+
+
+def colinearity_equations(x_gr, y_gr, z_gr, f, xc, yc, zc, omega, phi, kappa):
+    '''
+    Calculates the photo coordinates (xp, yp) of a point in the image using the colinearity equations.
+    Inputs:
+        x_gr, y_gr, z_gr: Local Cartesian coordinates of the point in meters.
+        f: Focal length of the camera in meters.
+        xc, yc, zc: Coordinates of the camera in geocentric Cartesian coordinates in meters.
+        omega, phi, kappa: Rotation angles (in radians) around the x, y, and z axes respectively.
+    Outputs:
+        xp, yp: Photo coordinates of the point in the image in pixels.
+    '''
+    R = np.array([
+        [np.cos(phi) * np.cos(kappa), -np.cos(phi) * np.sin(kappa), np.sin(phi)],
+        [np.cos(omega) * np.sin(kappa) + np.sin(omega) * np.sin(phi) * np.cos(kappa), np.cos(omega) * np.cos(kappa) - np.sin(omega) * np.sin(phi) * np.sin(kappa), -np.sin(omega) * np.cos(phi)],
+        [np.sin(omega) * np.sin(kappa) - np.cos(omega) * np.sin(phi) * np.cos(kappa), np.sin(omega) * np.cos(kappa) + np.cos(omega) * np.sin(phi) * np.sin(kappa), np.cos(omega) * np.cos(phi)]
+    ])
+
+    lam = - f * R[2, :]@ (np.array([[x_gr], [y_gr], [z_gr]]) - np.array([[xc], [yc], [zc]]))
+    Xp = 1/lam * R[0:2, :] @ (np.array([[x_gr], [y_gr], [z_gr]]) - np.array([[xc], [yc], [zc]]))
+    
+    return Xp[0, 0], Xp[1, 0]
+
+
+def objective_function(params, f, GCPs_local_cartesian_true_coords, GCPs_fiducial_true_coords):
+    '''
+    Objective function for the optimization process.
+    Inputs:
+        params: Parameters to be optimized (xc, yc, zc, omega, phi, kappa).
+        f: Focal length of the camera in meters.
+        GCPs_local_cartesian_true_coords: True coordinates of the GCPs in local Cartesian coordinates.
+        GCPs_fiducial_true_coords: True coordinates of the fiducial marks in the image.
+    Outputs:
+        res: Residual sum of squares.
+    '''
+    xc, yc, zc, omega, phi, kappa = params[0], params[1], params[2], params[3], params[4], params[5]
+    
+    GCPs_fiducial_inferred_coords = np.array(
+        [colinearity_equations(x_gr, y_gr, z_gr, f, xc, yc, zc, omega, phi, kappa) for x_gr, y_gr, z_gr in GCPs_local_cartesian_true_coords]
+    )
+    
+    res = 1/2 * np.linalg.norm(GCPs_fiducial_inferred_coords - GCPs_fiducial_true_coords, axis=1) ** 2
+    res = np.sum(res)
+    
+    return res
