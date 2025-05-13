@@ -1,6 +1,6 @@
 import numpy as np
 
-def ellipsoidal_to_geocentric_cartesian_coordinates(lat, lon, h):
+def geodetic_to_geocentric_cartesian_coordinates(lat, lon, h):
     '''
     Convert ellipsoidal coordinates (latitude, longitude, height) to geocentric Cartesian coordinates (x, y, z).
     Inputs:
@@ -22,7 +22,7 @@ def ellipsoidal_to_geocentric_cartesian_coordinates(lat, lon, h):
     z = ((1 - e**2) * nu + h) * np.sin(lat)
     return x, y, z
 
-def geocentric_cartesian_to_ellipsoidal_coordinates(x, y, z):
+def geocentric_cartesian_to_geodetic_coordinates(x, y, z):
     '''
     Convert geocentric Cartesian coordinates (x, y, z) to ellipsoidal coordinates (latitude, longitude, height).
     Inputs:
@@ -61,7 +61,7 @@ def geocentric_cartesian_to_local_cartesian_coordinates(x, y, z, lat_c, lon_c):
         x_gr, y_gr, z_gr: Local Cartesian coordinates in meters.
     '''
     h_c = 0
-    x_c, y_c, z_c = ellipsoidal_to_geocentric_cartesian_coordinates(lat_c, lon_c, h_c)
+    x_c, y_c, z_c = geodetic_to_geocentric_cartesian_coordinates(lat_c, lon_c, h_c)
     
     matrix = np.array([
         [-np.sin(lon_c), np.cos(lon_c), 0],
@@ -85,7 +85,7 @@ def local_cartesian_to_geocentric_cartesian_coordinates(x_gr, y_gr, z_gr, lat_c,
         x, y, z: Geocentric Cartesian coordinates in meters.
     '''
     h_c = 0
-    x_c, y_c, z_c = ellipsoidal_to_geocentric_cartesian_coordinates(lat_c, lon_c, h_c)
+    x_c, y_c, z_c = geodetic_to_geocentric_cartesian_coordinates(lat_c, lon_c, h_c)
     
     matrix = np.array([
         [-np.sin(lon_c), np.cos(lon_c), 0],
