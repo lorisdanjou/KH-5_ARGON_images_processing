@@ -73,11 +73,12 @@ def fiducial_to_image_coordinates_molnar(xi, eta, xc, yc, alpha, delta_xi, delta
         return X[0, 0], X[1, 0]
     elif type(xi) == np.ndarray and type(eta) == np.ndarray:
         X = np.linalg.inv(rotation_matrix) @ np.array([xi, eta]) + np.array([[xc], [yc]]) * np.ones((2, xi.shape[0]))
+        return X[0, :], X[1, :]
     else:
         raise TypeError("xi, eta must be either all floats or all numpy arrays")
 
 
-def objective_function_molnar(params, FMs_fiducial_true_coords, FMs_image_true_coords): # TODO: vectorize
+def objective_function_molnar(params, FMs_fiducial_true_coords, FMs_image_true_coords):
     '''
     Objective function for the optimization process to retrieve parameters to switch from a coordinate system and the other.
     Inputs:
@@ -91,10 +92,11 @@ def objective_function_molnar(params, FMs_fiducial_true_coords, FMs_image_true_c
     assert FMs_fiducial_true_coords.shape[1] == 2, "Fiducial and image coordinates must have two columns."
     
     xc, yc, alpha, delta_xi, delta_eta = params[0], params[1], params[2], params[3], params[4]
-        
-    FMs_fiducial_inferred_coords = np.array(
-        [np.array(image_to_fiducial_coordinates_molnar(X[0], X[1], xc, yc, alpha, delta_xi, delta_eta)) for X in FMs_image_true_coords]
+    
+    xi, eta = image_to_fiducial_coordinates_molnar(
+        FMs_image_true_coords[:, 0], FMs_image_true_coords[:, 1], xc, yc, alpha, delta_xi, delta_eta
     )
+    FMs_fiducial_inferred_coords = np.array([xi, eta]).T
     
     res = 1/2 * np.linalg.norm(FMs_fiducial_inferred_coords - FMs_fiducial_true_coords, axis=1) ** 2
     res = np.sum(res)
@@ -117,7 +119,7 @@ def image_to_fiducial_coordinates_linear(x, y, matrix):
         XI = matrix @ np.array([x, y])
         return XI[0, :], XI[1, :]
     else:
-        raise TypeError("y, y must be either all floats or all numpy arrays")
+        raise TypeError("x, y must be either all floats or all numpy arrays")
 
 
 def fiducial_to_image_coordinates_linear(xi, eta, matrix):
@@ -139,7 +141,7 @@ def fiducial_to_image_coordinates_linear(xi, eta, matrix):
         raise TypeError("xi, eta must be either all floats or all numpy arrays")
 
 
-def objective_function_linear(matrix, FMs_fiducial_true_coords, FMs_image_true_coords): # TODO: vectorize
+def objective_function_linear(matrix, FMs_fiducial_true_coords, FMs_image_true_coords):
     '''
     Objective function for the optimization process to retrieve parameters to switch from a coordinate system and the other.
     Inputs:
@@ -153,10 +155,9 @@ def objective_function_linear(matrix, FMs_fiducial_true_coords, FMs_image_true_c
     assert FMs_fiducial_true_coords.shape[1] == 2, "Fiducial and image coordinates must have two columns."
     
     matrix = np.array(matrix).reshape(2, 2)
-        
-    FMs_fiducial_inferred_coords = np.array(
-        [np.array(image_to_fiducial_coordinates_linear(X[0], X[1], matrix)) for X in FMs_image_true_coords]
-    )
+    
+    xi, eta = image_to_fiducial_coordinates_linear(FMs_image_true_coords[:, 0], FMs_image_true_coords[:, 1], matrix)
+    FMs_fiducial_inferred_coords = np.array([xi, eta]).T
     
     res = 1/2 * np.linalg.norm(FMs_fiducial_inferred_coords - FMs_fiducial_true_coords, axis=1) ** 2
     res = np.sum(res)
@@ -206,7 +207,6 @@ def image_to_fiducial_coordinates_affine(x, y, matrix, translation_vector=np.arr
         XI = matrix @ np.array([[x], [y]]) - translation_vector
         return XI[0, 0], XI[1, 0]
     elif type(x) == np.ndarray and type(y) == np.ndarray:
-        # print(translation_vector * np.ones((2, x.shape[0])))
         XI = matrix @ np.array([x, y]) - translation_vector * np.ones((2, x.shape[0]))
         return XI[0, :], XI[1, :]
     else:
@@ -251,9 +251,8 @@ def objective_function_affine(params, FMs_fiducial_true_coords, FMs_image_true_c
     matrix = np.array([[m11, m12], [m21, m22]])
     translation_vector = np.array([[xt], [yt]])
         
-    FMs_fiducial_inferred_coords = np.array(
-        [np.array(image_to_fiducial_coordinates_affine(X[0], X[1], matrix, translation_vector)) for X in FMs_image_true_coords]
-    )
+    xi, eta = image_to_fiducial_coordinates_affine(FMs_image_true_coords[:, 0], FMs_image_true_coords[:, 1], matrix, translation_vector)
+    FMs_fiducial_inferred_coords = np.array([xi, eta]).T
     
     res = 1/2 * np.linalg.norm(FMs_fiducial_inferred_coords - FMs_fiducial_true_coords, axis=1) ** 2
     res = np.sum(res)
