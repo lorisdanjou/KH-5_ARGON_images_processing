@@ -30,45 +30,54 @@ def image_to_fiducial_coordinates_molnar(x, y, xc, yc, alpha, delta_xi, delta_et
     '''
     Convert image coordinates to fiducial coordinates as explained in Molnar et al. (2021), using the given parameters.
     Inputs:
-        x, y: Image coordinates.
-        xc, yc: Center of the fiducial coordinate system.
-        alpha: Rotation angle in radians.
-        delta_xi, delta_eta: size of pixel.
+        x, y (int, float or np.ndarray(n,)): Image coordinates.
+        xc, yc (in or float): Center of the fiducial coordinate system.
+        alpha (int or float): Rotation angle in radians.
+        delta_xi, delta_eta (int or float): size of pixel.
     Outputs:
-        xi, eta: Fiducial coordinates.
+        xi, eta (int, float or np.ndarray(n,)): Fiducial coordinates.
     '''
     rotation_matrix = np.array([
         [delta_xi * np.cos(alpha), delta_eta * np.sin(alpha)],
         [-delta_xi * np.sin(alpha), delta_eta * np.cos(alpha)]
     ])
     
-    XI = np.zeros((2, 1))
-    XI = rotation_matrix @ np.array([[x - xc], [y - yc]])
-    return XI[0, 0], XI[1, 0]
+    if type(x) in [float, int] and type(y) in [float, int]:
+        XI = rotation_matrix @ np.array([[x - xc], [y - yc]])
+        return XI[0, 0], XI[1, 0]
+    elif type(x) == np.ndarray and type(y) == np.ndarray:
+        XI = rotation_matrix @ np.array([x - xc, y - yc])
+        return XI[0, :], XI[1, :]
+    else:
+        raise TypeError("x, y must be either all floats or all numpy arrays")
 
 
 def fiducial_to_image_coordinates_molnar(xi, eta, xc, yc, alpha, delta_xi, delta_eta):
     '''
     Convert fiducial coordinates to image coordinates as explained in Molnar et al. (2021), using the given parameters.
     Inputs:
-        xi, eta: Fiducial coordinates.
-        xc, yc: Center of the fiducial coordinate system.
-        alpha: Rotation angle in radians.
-        delta_xi, delta_eta: size of pixel.
+        xi, eta (int, float or np.ndarray(n,)): Fiducial coordinates.
+        xc, yc (int of float): Center of the fiducial coordinate system.
+        alpha (int or float): Rotation angle in radians.
+        delta_xi, delta_eta (int or float): size of pixel.
     Outputs:
-        x, y: Image coordinates.
+        x, y (int, float or np.ndarray(n,)): Image coordinates.
     '''
     rotation_matrix = np.array([
         [delta_xi * np.cos(alpha), delta_eta * np.sin(alpha)],
         [-delta_xi * np.sin(alpha), delta_eta * np.cos(alpha)]
     ])
     
-    X = np.zeros((2, 1))
-    X = np.linalg.inv(rotation_matrix) @ np.array([[xi], [eta]]) + np.array([[xc], [yc]])
-    return X[0, 0], X[1, 0]
+    if type(xi) in [float, int] and type(eta) in [float, int]:
+        X = np.linalg.inv(rotation_matrix) @ np.array([[xi], [eta]]) + np.array([[xc], [yc]])
+        return X[0, 0], X[1, 0]
+    elif type(xi) == np.ndarray and type(eta) == np.ndarray:
+        X = np.linalg.inv(rotation_matrix) @ np.array([xi, eta]) + np.array([[xc], [yc]]) * np.ones((2, xi.shape[0]))
+    else:
+        raise TypeError("xi, eta must be either all floats or all numpy arrays")
 
 
-def objective_function_molnar(params, FMs_fiducial_true_coords, FMs_image_true_coords):
+def objective_function_molnar(params, FMs_fiducial_true_coords, FMs_image_true_coords): # TODO: vectorize
     '''
     Objective function for the optimization process to retrieve parameters to switch from a coordinate system and the other.
     Inputs:
@@ -96,31 +105,41 @@ def image_to_fiducial_coordinates_linear(x, y, matrix):
     '''
     Convert image coordinates to fiducial coordinates using the given parameters.
     Inputs:
-        x, y: Image coordinates.
-        matrix: Linear transformation matrix (np.array).
+        x, y (int, float or np.ndarray(n,)): Image coordinates.
+        matrix np.ndarray(2, 2): Linear transformation matrix (np.array).
     Outputs:
-        xi, eta: Fiducial coordinates.
+        xi, eta (int, float or np.ndarray(n,)): Fiducial coordinates.
     '''
-    XI = np.zeros((2, 1))
-    XI = matrix @ np.array([[x], [y]])
-    return XI[0, 0], XI[1, 0]
+    if type(x) in [float, int] and type(y) in [float, int]:
+        XI = matrix @ np.array([[x], [y]])
+        return XI[0, 0], XI[1, 0]
+    elif type(x) == np.ndarray and type(y) == np.ndarray:
+        XI = matrix @ np.array([x, y])
+        return XI[0, :], XI[1, :]
+    else:
+        raise TypeError("y, y must be either all floats or all numpy arrays")
 
 
 def fiducial_to_image_coordinates_linear(xi, eta, matrix):
     '''
     Convert fiducial coordinates to image coordinates using the given parameters.
     Inputs:
-        xi, eta: Fiducial coordinates.
-        matrix: Linear transformation matrix used to convert from image to fiducial coordinates (np.array).
+        xi, eta (int, float or np.ndarray(n,)): Fiducial coordinates.
+        matrix (np.ndarray(2, 2)): Linear transformation matrix used to convert from image to fiducial coordinates (np.array).
     Outputs:
-        x, y: Image coordinates.
+        x, y (int, float or np.ndarray(n,)): Image coordinates.
     '''
-    X = np.zeros((2, 1))
-    X = np.linalg.inv(matrix) @ np.array([[xi], [eta]])
-    return X[0, 0], X[1, 0]
+    if type(xi) in [float, int] and type(eta) in [float, int]:
+        X = np.linalg.inv(matrix) @ np.array([[xi], [eta]])
+        return X[0, 0], X[1, 0]
+    elif type(xi) == np.ndarray and type(eta) == np.ndarray:
+        X = np.linalg.inv(matrix) @ np.array([xi, eta])
+        return X[0, :], X[1, :]
+    else:
+        raise TypeError("xi, eta must be either all floats or all numpy arrays")
 
 
-def objective_function_linear(matrix, FMs_fiducial_true_coords, FMs_image_true_coords):
+def objective_function_linear(matrix, FMs_fiducial_true_coords, FMs_image_true_coords): # TODO: vectorize
     '''
     Objective function for the optimization process to retrieve parameters to switch from a coordinate system and the other.
     Inputs:
@@ -144,7 +163,7 @@ def objective_function_linear(matrix, FMs_fiducial_true_coords, FMs_image_true_c
     return res
 
 
-def least_squares_linear(FMs_fiducial_true_coords, FMs_image_true_coords, alpha=0, a_priori=np.eye(2)): # not working for real image
+def least_squares_linear(FMs_fiducial_true_coords, FMs_image_true_coords, alpha=0, a_priori=np.eye(2)): # not working for real image # TODO: vectorize
     '''
     Compute the least squares solution to find the linear transformation matrix that maps image coordinates to fiducial coordinates.
     Inputs:
@@ -177,33 +196,44 @@ def image_to_fiducial_coordinates_affine(x, y, matrix, translation_vector=np.arr
     '''
     Convert image coordinates to fiducial coordinates using the given parameters.
     Inputs:
-        x, y: Image coordinates.
-        matrix: Linear transformation matrix (np.array 2x2).
-        translation_vector: Translation vector (np.array 2x1).
+        x, y (int, float or np.ndarray(n,)): Image coordinates.
+        matrix (np.ndarray(2, 2)): Linear transformation matrix (np.array 2x2).
+        translation_vector (np.ndarray(2, 1)): Translation vector (np.array 2x1).
     Outputs:
-        xi, eta: Fiducial coordinates.
+        xi, eta (int, float or np.ndarray(n,): Fiducial coordinates.
     '''
-    XI = np.zeros((2, 1))
-    XI = matrix @ np.array([[x], [y]]) - translation_vector
-    return XI[0, 0], XI[1, 0]
+    if type(x) in [float, int] and type(y) in [float, int]:
+        XI = matrix @ np.array([[x], [y]]) - translation_vector
+        return XI[0, 0], XI[1, 0]
+    elif type(x) == np.ndarray and type(y) == np.ndarray:
+        # print(translation_vector * np.ones((2, x.shape[0])))
+        XI = matrix @ np.array([x, y]) - translation_vector * np.ones((2, x.shape[0]))
+        return XI[0, :], XI[1, :]
+    else:
+        raise TypeError("xi, eta must be either all floats or all numpy arrays")
 
 
 def fiducial_to_image_coordinates_affine(xi, eta, matrix, translation_vector=np.array([[0], [0]])):
     '''
     Convert fiducial coordinates to image coordinates using the given parameters.
     Inputs:
-        xi, eta: Fiducial coordinates.
-        matrix: Linear transformation matrix used to convert from image to fiducial coordinates (np.array 2x2).
-        translation_vector: Translation vector (np.array 2x1).
+        xi, eta (int, float or np.ndarray(n,): Fiducial coordinates.
+        matrix (np.ndarray(2, 2)): Linear transformation matrix used to convert from image to fiducial coordinates (np.array 2x2).
+        translation_vector (np.ndarray(2, 1)): Translation vector (np.array 2x1).
     Outputs:
-        x, y: Image coordinates.
+        x, y (int, float or np.ndarray(n,): Image coordinates.
     '''
-    X = np.zeros((2, 1))
-    X = np.linalg.inv(matrix) @ (np.array([[xi], [eta]]) + translation_vector)
-    return X[0, 0], X[1, 0]
+    if type(xi) in [float, int] and type(eta) in [float, int]:
+        X = np.linalg.inv(matrix) @ (np.array([[xi], [eta]]) + translation_vector)
+        return X[0, 0], X[1, 0]
+    elif type(xi) == np.ndarray and type(eta) == np.ndarray:
+        X = np.linalg.inv(matrix) @ (np.array([xi, eta]) + translation_vector)
+        return X[0, :], X[1, :]
+    else:
+        raise TypeError("xi, eta must be either all floats or all numpy arrays")
 
 
-def objective_function_affine(params, FMs_fiducial_true_coords, FMs_image_true_coords):
+def objective_function_affine(params, FMs_fiducial_true_coords, FMs_image_true_coords): # TODO: vectorize
     '''
     Objective function for the optimization process to retrieve parameters to switch from a coordinate system and the other.
     Inputs:
