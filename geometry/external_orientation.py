@@ -107,7 +107,7 @@ def local_cartesian_to_geocentric_cartesian_coordinates(x_gr, y_gr, z_gr, lat_c,
     raise TypeError("x, y, z must be either all floats or all numpy arrays")
 
 
-def colinearity_equations(x_gr, y_gr, z_gr, f, xc, yc, zc, omega, phi, kappa):
+def collinearity_equations(x_gr, y_gr, z_gr, f, xc, yc, zc, omega, phi, kappa):
     '''
     Calculates the photo coordinates (xp, yp) of a point in the image using the colinearity equations.
     Inputs:
@@ -125,12 +125,12 @@ def colinearity_equations(x_gr, y_gr, z_gr, f, xc, yc, zc, omega, phi, kappa):
     ])
 
     if type(x_gr) in [float, int] and type(y_gr) in [float, int] and type(z_gr) in [float, int]:
-        lam = - f * R[2, :]@ (np.array([[x_gr], [y_gr], [z_gr]]) - np.array([[xc], [yc], [zc]]))
-        Xp = 1/lam * R[0:2, :] @ (np.array([[x_gr], [y_gr], [z_gr]]) - np.array([[xc], [yc], [zc]]))
+        lam = R[2, :] @ (np.array([[x_gr], [y_gr], [z_gr]]) - np.array([[xc], [yc], [zc]]))
+        Xp = - f / lam * R[0:2, :] @ (np.array([[x_gr], [y_gr], [z_gr]]) - np.array([[xc], [yc], [zc]]))
         return Xp[0, 0], Xp[1, 0]
     elif type(x_gr) == np.ndarray and type(y_gr) == np.ndarray and type(z_gr) == np.ndarray:        
-        lam = - f * R[2, :]@ (np.array([x_gr, y_gr, z_gr]) - (np.array([[xc], [yc], [zc]])) * np.ones((3, x_gr.shape[0])))
-        Xp = 1/lam * (R[0:2, :] @ (np.array([x_gr, y_gr, z_gr]) - (np.array([[xc], [yc], [zc]])) * np.ones((3, x_gr.shape[0]))) * np.ones((2, x_gr.shape[0])))
+        lam = R[2, :] @ (np.array([x_gr, y_gr, z_gr]) - (np.array([[xc], [yc], [zc]])) * np.ones((3, x_gr.shape[0])))
+        Xp = -f / lam * (R[0:2, :] @ (np.array([x_gr, y_gr, z_gr]) - (np.array([[xc], [yc], [zc]])) * np.ones((3, x_gr.shape[0]))) * np.ones((2, x_gr.shape[0])))
         return Xp[0, :], Xp[1, :]
     raise TypeError("x_gr, y_gr, z_gr must be either all floats or all numpy arrays")
 
@@ -148,7 +148,7 @@ def objective_function(params, f, GCPs_local_cartesian_true_coords, GCPs_photo_t
     '''
     xc, yc, zc, omega, phi, kappa = params[0], params[1], params[2], params[3], params[4], params[5]
     
-    xp, yp = colinearity_equations(GCPs_local_cartesian_true_coords[:, 0], GCPs_local_cartesian_true_coords[:, 1], GCPs_local_cartesian_true_coords[:, 2], f, xc, yc, zc, omega, phi, kappa)
+    xp, yp = collinearity_equations(GCPs_local_cartesian_true_coords[:, 0], GCPs_local_cartesian_true_coords[:, 1], GCPs_local_cartesian_true_coords[:, 2], f, xc, yc, zc, omega, phi, kappa)
     GCPs_fiducial_inferred_coords = np.array([xp, yp]).T
     
     res = 1/2 * np.linalg.norm(GCPs_fiducial_inferred_coords - GCPs_photo_true_coords, axis=1) ** 2
