@@ -1,5 +1,11 @@
 import numpy as np
 
+"""
+TODO:
+- move objective functions to utils/optim.py
+- chose one method (Molnar?) and delete the others.
+"""
+
 # Conversion between photo and fiducial coordinates
 
 def photo_to_fiducial_coordinates(xp, yp, x0, y0):
