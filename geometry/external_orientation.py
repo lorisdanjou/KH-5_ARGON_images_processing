@@ -135,7 +135,7 @@ def collinearity_equations(x_gr, y_gr, z_gr, f, xc, yc, zc, omega, phi, kappa):
     raise TypeError("x_gr, y_gr, z_gr must be either all floats or all numpy arrays")
 
 
-def objective_function(params, f, GCPs_local_cartesian_true_coords, GCPs_photo_true_coords):
+def objective_function(params, f, GCPs_local_cartesian_true_coords, GCPs_photo_true_coords): # TODO: rename and move to space_rejection.py
     '''
     Objective function for the optimization process.
     Inputs:

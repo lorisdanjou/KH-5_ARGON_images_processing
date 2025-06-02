@@ -30,29 +30,29 @@ def unpack_parameters(params):
     Unpack the parameters from a single list.
     """
     pp = [
-        params[6],
-        params[7]
+        params[0],
+        params[1]
     ]
     ld_coeffs = [
+        params[2],
+        params[3],
+        params[4],
+        params[5],
+        params[6],
+        params[7],
+    ]
+    eo_params = [
         params[8],
         params[9],
         params[10],
         params[11],
         params[12],
-        params[13],
-    ]
-    eo_params = [
-        params[14],
-        params[15],
-        params[16],
-        params[17],
-        params[18],
-        params[19]
+        params[13]
     ]
     return pp, ld_coeffs, eo_params
 
 # objective function for one image, with EO and IO parameters.
-def objective_function(params, GCPs):
+def space_rejection_1img(params, GCPs, f):
 
     # unpack parameters
     pp, ld_coeffs, eo_params = unpack_parameters(params)
@@ -63,14 +63,27 @@ def objective_function(params, GCPs):
     GCPs.loc[:, ["xp", "yp"]] = np.array([xp, yp]).T
     
     # lens distortion
-    # xp_p, yp_p = io.lens_distortion(GCPs.xp.values, GCPs.yp.values, ld_coeffs)
-    # GCPs.loc[:, ["xp_p", "yp_p"]] = np.array([xp_p, yp_p]).T
+    xp_ld, yp_ld = io.correct_lens_distortion(GCPs.xp.values, GCPs.yp.values, ld_coeffs)
+    GCPs.loc[:, ["xp_ld", "yp_ld"]] = np.array([xp_ld, yp_ld]).T
     
     ## EO
     assert "x_gr" in GCPs.columns and "y_gr" in GCPs.columns and "z_gr" in GCPs.columns, "GCPs must contain x_gr, y_gr, z_gr columns"
-    
     # collinearity equations
+    xp_ld_1, yp_ld_1 = eo.collinearity_equations(
+        GCPs.x_gr.values, 
+        GCPs.y_gr.values, 
+        GCPs.z_gr.values, 
+        f,
+        eo_params[0],  # xc
+        eo_params[1],  # yc
+        eo_params[2],  # zc
+        eo_params[3],  # omega
+        eo_params[4],  # phi
+        eo_params[5]   # kappa
+    )
     
     ## compute residual
-    res = 0
+    res = 1/2 * np.linalg.norm(np.array([xp_ld, yp_ld]).T - np.array([xp_ld_1, yp_ld_1]).T, axis=1) ** 2
+    res = np.sum(res)
+    
     return res
