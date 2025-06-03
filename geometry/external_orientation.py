@@ -135,23 +135,23 @@ def collinearity_equations(x_gr, y_gr, z_gr, f, xc, yc, zc, omega, phi, kappa):
     raise TypeError("x_gr, y_gr, z_gr must be either all floats or all numpy arrays")
 
 
-def objective_function(params, f, GCPs_local_cartesian_true_coords, GCPs_photo_true_coords): # TODO: rename and move to space_rejection.py
-    '''
-    Objective function for the optimization process.
-    Inputs:
-        params (list or np.ndarray(6,)): Parameters to be optimized (xc, yc, zc, omega, phi, kappa).
-        f (int or float): Focal length of the camera in meters.
-        GCPs_local_cartesian_true_coords (np.ndarray(n, 3)): True coordinates of the GCPs in local Cartesian coordinates.
-        GCPs_photo_true_coords (np.ndarray(n, 2)): True coordinates of the fiducial marks in the image.
-    Outputs:
-        res (float): Residual sum of squares.
-    '''
-    xc, yc, zc, omega, phi, kappa = params[0], params[1], params[2], params[3], params[4], params[5]
+# def objective_function(params, f, GCPs_local_cartesian_true_coords, GCPs_photo_true_coords): # TODO: rename and move to space_rejection.py
+#     '''
+#     Objective function for the optimization process.
+#     Inputs:
+#         params (list or np.ndarray(6,)): Parameters to be optimized (xc, yc, zc, omega, phi, kappa).
+#         f (int or float): Focal length of the camera in meters.
+#         GCPs_local_cartesian_true_coords (np.ndarray(n, 3)): True coordinates of the GCPs in local Cartesian coordinates.
+#         GCPs_photo_true_coords (np.ndarray(n, 2)): True coordinates of the fiducial marks in the image.
+#     Outputs:
+#         res (float): Residual sum of squares.
+#     '''
+#     xc, yc, zc, omega, phi, kappa = params[0], params[1], params[2], params[3], params[4], params[5]
     
-    xp, yp = collinearity_equations(GCPs_local_cartesian_true_coords[:, 0], GCPs_local_cartesian_true_coords[:, 1], GCPs_local_cartesian_true_coords[:, 2], f, xc, yc, zc, omega, phi, kappa)
-    GCPs_fiducial_inferred_coords = np.array([xp, yp]).T
+#     xp, yp = collinearity_equations(GCPs_local_cartesian_true_coords[:, 0], GCPs_local_cartesian_true_coords[:, 1], GCPs_local_cartesian_true_coords[:, 2], f, xc, yc, zc, omega, phi, kappa)
+#     GCPs_fiducial_inferred_coords = np.array([xp, yp]).T
     
-    res = 1/2 * np.linalg.norm(GCPs_fiducial_inferred_coords - GCPs_photo_true_coords, axis=1) ** 2
-    res = np.sum(res)
+#     res = 1/2 * np.linalg.norm(GCPs_fiducial_inferred_coords - GCPs_photo_true_coords, axis=1) ** 2
+#     res = np.sum(res)
     
-    return res
+#     return res
