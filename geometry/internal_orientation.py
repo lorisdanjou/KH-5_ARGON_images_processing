@@ -42,7 +42,7 @@ def image_to_fiducial_coordinates(x, y, xc, yc, alpha, delta_xi, delta_eta):
         [-delta_xi * np.sin(alpha), delta_eta * np.cos(alpha)]
     ])
     
-    if type(x) in [float, int] and type(y) in [float, int]:
+    if type(x) in [float, np.float32, np.float64, int, np.int32, np.int64] and type(y) in [float, np.float32, np.float64, int, np.int32, np.int64]:
         XI = rotation_matrix @ np.array([[x - xc], [y - yc]])
         return XI[0, 0], XI[1, 0]
     elif type(x) == np.ndarray and type(y) == np.ndarray:
@@ -68,7 +68,7 @@ def fiducial_to_image_coordinates(xi, eta, xc, yc, alpha, delta_xi, delta_eta):
         [-delta_xi * np.sin(alpha), delta_eta * np.cos(alpha)]
     ])
     
-    if type(xi) in [float, int] and type(eta) in [float, int]:
+    if type(xi) in [float, np.float32, np.float64, int, np.int32, np.int64] and type(eta) in [float, np.float32, np.float64, int, np.int32, np.int64]:
         X = np.linalg.inv(rotation_matrix) @ np.array([[xi], [eta]]) + np.array([[xc], [yc]])
         return X[0, 0], X[1, 0]
     elif type(xi) == np.ndarray and type(eta) == np.ndarray:

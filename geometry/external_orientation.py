@@ -69,7 +69,7 @@ def geocentric_cartesian_to_local_cartesian_coordinates(x, y, z, lat_c, lon_c):
         [np.cos(lat_c) * np.cos(lon_c), np.cos(lat_c) * np.sin(lon_c), np.sin(lat_c)]
     ])
     
-    if type(x) in [float, int] and type(y) in [float, int] and type(z) in [float, int]:
+    if type(x) in [float, np.float32, np.float64, int, np.int32, np.int64] and type(y) in [float, np.float32, np.float64, int, np.int32, np.int64] and type(z) in [float, np.float32, np.float64, int, np.int32, np.int64]:
         X_gr = matrix @ np.array([[x - x_c], [y - y_c], [z - z_c]])
         return X_gr[0, 0], X_gr[1, 0], X_gr[2, 0]
     elif type(x) == np.ndarray and type(y) == np.ndarray and type(z) == np.ndarray:
@@ -98,7 +98,7 @@ def local_cartesian_to_geocentric_cartesian_coordinates(x_gr, y_gr, z_gr, lat_c,
         [np.cos(lat_c) * np.cos(lon_c), np.cos(lat_c) * np.sin(lon_c), np.sin(lat_c)]
     ])
     
-    if type(x_gr) in [float, int] and type(y_gr) in [float, int] and type(z_gr) in [float, int]:
+    if type(x_gr) in [float, np.float32, np.float64, int, np.int32, np.int64] and type(y_gr) in [float, np.float32, np.float64, int, np.int32, np.int64] and type(z_gr) in [float, np.float32, np.float64, int, np.int32, np.int64]:
         X = np.linalg.inv(matrix) @ np.array([[x_gr], [y_gr], [z_gr]]) + np.array([[x_c], [y_c], [z_c]])
         return X[0, 0], X[1, 0], X[2, 0]
     elif type(x_gr) == np.ndarray and type(y_gr) == np.ndarray and type(z_gr) == np.ndarray:
@@ -124,7 +124,7 @@ def collinearity_equations(x_gr, y_gr, z_gr, f, xc, yc, zc, omega, phi, kappa):
         [np.sin(omega) * np.sin(kappa) - np.cos(omega) * np.sin(phi) * np.cos(kappa), np.sin(omega) * np.cos(kappa) + np.cos(omega) * np.sin(phi) * np.sin(kappa), np.cos(omega) * np.cos(phi)]
     ])
 
-    if type(x_gr) in [float, int] and type(y_gr) in [float, int] and type(z_gr) in [float, int]:
+    if type(x_gr) in [float, np.float32, np.float64, int, np.int32, np.int64] and type(y_gr) in [float, np.float32, np.float64, int, np.int32, np.int64] and type(z_gr) in [float, np.float32, np.float64, int, np.int32, np.int64]:
         lam = R[2, :] @ (np.array([[x_gr], [y_gr], [z_gr]]) - np.array([[xc], [yc], [zc]]))
         Xp = - f / lam * R[0:2, :] @ (np.array([[x_gr], [y_gr], [z_gr]]) - np.array([[xc], [yc], [zc]]))
         return Xp[0, 0], Xp[1, 0]
