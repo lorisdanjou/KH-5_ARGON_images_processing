@@ -5,6 +5,6 @@
 - [ ] in `geometry.internal_orientation.py`, rename and/or move `objective_function`
 - [x] implement lens distortion
 - [ ] implement lens distortion inversion
-- [ ] implement & test global objective function as in _Molnar et al._, for one image only.
-- [ ] implement & test global objective function as in _Molnar et al._, for several images.
+- [x] implement & test global objective function as in _Molnar et al._, for one image only. → not satisfactory
+- [x] implement & test global objective function as in _Molnar et al._, for several images. → not satisfactory
 - [ ] split images and GCPs in smaller tiles to make georeferencing easier.

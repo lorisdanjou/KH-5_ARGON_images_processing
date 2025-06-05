@@ -119,7 +119,6 @@ def space_rejection_1img(params, GCPs, f):
     return res
 
 def space_rejection(params, GCPs, f, n_img=1):
-    
     # unpack parameters
     pp, ld_coeffs, eo_params = unpack_parameters(params, n_img=n_img)
     
